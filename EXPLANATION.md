@@ -23,6 +23,9 @@ finishes. That is acceptable for this small demonstration.
 - `sample_flask_project/`: the small login/dashboard application used as a target.
 - `tests/test_api.py`: proves scanning and idempotency behavior.
 
+The Streamlit sidebar also exposes Dashboard, Run History, and Projects.
+Run History comes from the database and can export an individual run as CSV.
+
 ## Database tables
 
 1. `project` stores one GitHub repository URL.
@@ -47,12 +50,13 @@ succeed, so the second request reads the first run.
 A new commit or a different test selection produces a different hash and therefore
 creates a new run.
 
-## Generation integration point
+## Test generation
 
-`generated_smoke_test()` currently returns one predictable demo test. When the
-generation team provides its service, replace only that function with an HTTP call
-that returns a node ID and Python test content. The database and execution flow do
-not need to change.
+`generator_service.py` collects a limited set of Python and test files, removes
+obvious hard-coded credentials, and requests structured pytest cases from OpenAI.
+Generated paths and Python syntax are validated before tests enter the database.
+Generating again for the same commit reuses the saved tests instead of spending
+tokens again.
 
 ## Honest limitation
 
@@ -66,8 +70,7 @@ dependencies are already installed.
 1. Start Flask and Streamlit.
 2. Paste the public URL of the sample Flask repository.
 3. Click Scan and show its four discovered tests.
-4. Click Generate and show the additional generated smoke test.
+4. Click Generate and show the new AI-generated tests.
 5. Select only two tests and click Execute.
 6. Click Execute again and show the “existing result reused” message.
 7. Explain that selecting a different set creates a different valid run.
-

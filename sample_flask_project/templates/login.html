@@ -1,14 +1,43 @@
-<!doctype html>
-<html lang="en">
-  <head><meta charset="utf-8"><title>Login</title></head>
-  <body>
-    <h1>Login</h1>
-    {% if error %}<p>{{ error }}</p>{% endif %}
-    <form method="post">
-      <label>Username <input name="username" required></label><br>
-      <label>Password <input name="password" type="password" required></label><br>
-      <button type="submit">Login</button>
-    </form>
-  </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Sign in · Srija Portal{% endblock %}
+{% block body %}
+  <main class="auth-layout">
+    <section class="brand-panel">
+      <div class="logo">S</div>
+      <span class="brand-name">Srija Portal</span>
+      <div class="brand-copy">
+        <span class="eyebrow">TEAM WORKSPACE</span>
+        <h1>Everything your team needs, in one place.</h1>
+        <p>Sign in to view activity, projects, and account information.</p>
+      </div>
+    </section>
 
+    <section class="form-panel">
+      <div class="form-card">
+        <span class="mobile-brand">Srija Portal</span>
+        <h2>Welcome back</h2>
+        <p class="muted">Enter your account details to continue.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="alert {{ category }}" role="status">{{ message }}</div>
+          {% endfor %}
+        {% endwith %}
+        {% if error %}<div class="alert error" role="alert">{{ error }}</div>{% endif %}
+
+        <form method="post" novalidate>
+          <label for="username">Username</label>
+          <input id="username" name="username" autocomplete="username"
+                 value="{{ request.form.get('username', '') }}" placeholder="Enter your username" autofocus>
+
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password"
+                 autocomplete="current-password" placeholder="Enter your password">
+
+          <button type="submit">Sign in</button>
+        </form>
+        <div class="demo-note"><strong>Demo:</strong> admin / admin123</div>
+      </div>
+    </section>
+  </main>
+{% endblock %}

@@ -55,18 +55,26 @@ def discover_tests(repository_root):
         if any(part.startswith(".") for part in path.relative_to(repository_root).parts):
             continue
         try:
-            tree = ast.parse(path.read_text(encoding="utf-8"))
+            file_content = path.read_text(encoding="utf-8")
+            tree = ast.parse(file_content)
         except (OSError, UnicodeDecodeError, SyntaxError):
             continue
 
         relative_path = path.relative_to(repository_root).as_posix()
         for item in tree.body:
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name.startswith("test_"):
-                discovered.append(f"{relative_path}::{item.name}")
+                discovered.append(
+                    {"node_id": f"{relative_path}::{item.name}", "content": file_content}
+                )
             elif isinstance(item, ast.ClassDef) and item.name.startswith("Test"):
                 for method in item.body:
                     if isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef)) and method.name.startswith("test_"):
-                        discovered.append(f"{relative_path}::{item.name}::{method.name}")
+                        discovered.append(
+                            {
+                                "node_id": f"{relative_path}::{item.name}::{method.name}",
+                                "content": file_content,
+                            }
+                        )
     return discovered
 
 
@@ -76,18 +84,6 @@ def scan_repository(repository_url):
         root = Path(temp_dir) / "repository"
         clone_repository(repository_url, commit_sha, root)
         return commit_sha, discover_tests(root)
-
-
-def generated_smoke_test():
-    """Temporary adapter. Replace this function with the generator team's API call."""
-    node_id = "generated_tests/test_repository_smoke.py::test_repository_has_python_files"
-    content = '''from pathlib import Path
-
-
-def test_repository_has_python_files():
-    assert list(Path(".").rglob("*.py")), "Repository does not contain a Python file"
-'''
-    return node_id, content
 
 
 def make_idempotency_key(repository_url, commit_sha, test_ids):
@@ -103,7 +99,9 @@ def execute_tests(repository_url, commit_sha, test_cases):
         clone_repository(repository_url, commit_sha, root)
 
         for test_case in test_cases:
-            if test_case.content:
+            # Repository tests already exist in the clone. Only generated tests
+            # need their saved source written into the temporary repository.
+            if test_case.source == "generated" and test_case.content:
                 file_name = test_case.node_id.split("::", 1)[0]
                 destination = root / file_name
                 destination.parent.mkdir(parents=True, exist_ok=True)
@@ -130,4 +128,3 @@ def execute_tests(repository_url, commit_sha, test_cases):
                 }
             )
     return results
-

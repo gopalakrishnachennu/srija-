@@ -1,10 +1,44 @@
-<!doctype html>
-<html lang="en">
-  <head><meta charset="utf-8"><title>Dashboard</title></head>
-  <body>
-    <h1>Dashboard</h1>
-    <p>Welcome, {{ username }}.</p>
-    <a href="{{ url_for('logout') }}">Logout</a>
-  </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Dashboard · Srija Portal{% endblock %}
+{% block body %}
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <div><span class="logo small">S</span><strong>Srija Portal</strong></div>
+      <nav>
+        <a class="active" href="{{ url_for('dashboard') }}">▦ Dashboard</a>
+        <a href="#">◎ Activity</a>
+        <a href="#">□ Projects</a>
+        <a href="#">⚙ Settings</a>
+      </nav>
+      <form method="post" action="{{ url_for('logout') }}">
+        <button class="logout" type="submit">Sign out</button>
+      </form>
+    </aside>
 
+    <main class="dashboard-main">
+      <header>
+        <div><span class="eyebrow">OVERVIEW</span><h1>Good to see you, {{ username }}.</h1></div>
+        <span class="avatar">{{ username[0]|upper }}</span>
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert {{ category }}" role="status">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <section class="stats">
+        <article><span>Active projects</span><strong>8</strong><small>↑ 2 this month</small></article>
+        <article><span>Completed tasks</span><strong>24</strong><small>86% completion</small></article>
+        <article><span>Team members</span><strong>12</strong><small>3 currently online</small></article>
+      </section>
+
+      <section class="activity-card">
+        <div class="section-heading"><div><h2>Recent activity</h2><p>Latest updates from your workspace</p></div><button>View all</button></div>
+        <div class="activity"><span class="activity-icon purple">✓</span><div><strong>Website review completed</strong><p>Design team · 15 minutes ago</p></div><span class="tag done">Completed</span></div>
+        <div class="activity"><span class="activity-icon blue">↗</span><div><strong>Analytics report updated</strong><p>Marketing · 2 hours ago</p></div><span class="tag progress">In progress</span></div>
+        <div class="activity"><span class="activity-icon green">+</span><div><strong>New team member invited</strong><p>Administration · Yesterday</p></div><span class="tag invited">Invited</span></div>
+      </section>
+    </main>
+  </div>
+{% endblock %}
